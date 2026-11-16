@@ -251,16 +251,6 @@ public class PlayerController : MonoBehaviour
         {
             Destroy(other.gameObject);
 
-            if (GameManager.Instance != null)
-            {
-                GameManager.Instance.Collect();
-            }
-        }
-
-        // Trigger-based hazard
-        if (other.CompareTag("Hazard"))
-        {
-            Respawn();
         }
     }
 }

@@ -20,6 +20,9 @@ public class UIManager : MonoBehaviour
     [SerializeField] private TMP_Text timerText;
     [SerializeField] private float gameDuration = 180f;
 
+    [Header("Orb Counter")]
+    [SerializeField] private TMP_Text orbCounterText;
+
     private float remainingTime;
     private bool isPlaying = false;
     private bool gameEnded = false;
@@ -68,6 +71,12 @@ public class UIManager : MonoBehaviour
         int seconds = Mathf.FloorToInt(remainingTime % 60f);
 
         timerText.text = $"{minutes:00}:{seconds:00}";
+    }
+    public void UpdateOrbCounter(int collected, int total)
+    {
+        Debug.Log("Updating UI: " + collected + "/" + total);
+
+        orbCounterText.text = $"Fishes: {collected}/{total}";
     }
 
     public void StartGame()
