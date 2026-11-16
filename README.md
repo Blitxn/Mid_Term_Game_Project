@@ -88,7 +88,7 @@ I. Game Overview
          
     VII. Gameplay Video
     
-         Gameplay Demonstration: (LINK)
+         Gameplay Demonstration: https://youtu.be/p7Bwzu7muik?si=f1M3hX7wNVN33qPz
          
     
     
