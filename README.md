@@ -84,9 +84,11 @@ I. Game Overview
      
          - POLY STYLE Platformer Starter Pack: Unity Asset Store (platforms, environment, and props).
          - Neko Cat Free Edition: Unity Asset Store (main playable character).
+         
     VII. Gameplay Video
     
          Gameplay Demonstration: (LINK)
+         
     VIII. Playable Build Download 
     
           Download Game: [Link]
