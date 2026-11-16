@@ -1,15 +1,18 @@
+using System.Diagnostics;
 using UnityEngine;
+using Debug = UnityEngine.Debug;
 
 [RequireComponent(typeof(Rigidbody))]
 [RequireComponent(typeof(CapsuleCollider))]
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
-    [SerializeField] private float moveSpeed = 6f;
+    [SerializeField] private float moveSpeed = 4f;
 
     [Header("Jump")]
-    [SerializeField] private float jumpForce = 7f;
+    [SerializeField] private float jumpForce = 8f;
     [SerializeField] private float groundCheckDistance = 0.15f;
+    [SerializeField] private float fallMultiplier = 2.5f;
     [SerializeField] private LayerMask groundMask = ~0;
 
     [Header("Checkpoint")]
@@ -79,6 +82,8 @@ public class PlayerController : MonoBehaviour
 
         if (Input.GetButtonDown("Jump"))
         {
+            Debug.Log("SPACE KEY DETECTED");
+            Debug.Log("Is Grounded: " + IsGrounded());
             jumpRequested = true;
         }
 
@@ -127,11 +132,61 @@ public class PlayerController : MonoBehaviour
             lastPlatformRotation = currentPlatform.rotation;
         }
 
-        // Movement relative to Neko's rotation
-        Vector3 moveDirection =
-            (transform.forward * movement.z +
-             transform.right * movement.x).normalized;
+        // // Movement relative to Neko's rotation
+        // Vector3 moveDirection =
+        //     (transform.forward * movement.z +
+        //      transform.right * movement.x).normalized;
 
+        // rb.linearVelocity = new Vector3(
+        //     moveDirection.x * moveSpeed,
+        //     velocity.y,
+        //     moveDirection.z * moveSpeed
+        // );
+
+            // Move using world directions.
+        // Vector3 moveDirection = new Vector3(
+        //     movement.x,
+        //     0f,
+        //     movement.z
+        // ).normalized;
+
+        // Get the camera's forward and right directions.
+        Transform cam = Camera.main != null
+            ? Camera.main.transform
+            : transform;
+
+        Vector3 cameraForward = Vector3.ProjectOnPlane(
+            cam.forward,
+            Vector3.up
+        ).normalized;
+
+        Vector3 cameraRight = Vector3.ProjectOnPlane(
+            cam.right,
+            Vector3.up
+        ).normalized;
+
+        // Calculate movement relative to the camera.
+        Vector3 moveDirection = (
+            cameraForward * movement.z +
+            cameraRight * movement.x
+        ).normalized;
+
+        // Rotate Neko to face the movement direction.
+        if (moveDirection.sqrMagnitude > 0.01f)
+        {
+            Quaternion targetRotation =
+                Quaternion.LookRotation(moveDirection);
+
+            rb.MoveRotation(
+                Quaternion.Slerp(
+                    rb.rotation,
+                    targetRotation,
+                    10f * Time.fixedDeltaTime
+                )
+            );
+        }
+
+        // Apply movement while keeping vertical velocity.
         rb.linearVelocity = new Vector3(
             moveDirection.x * moveSpeed,
             velocity.y,
@@ -154,9 +209,28 @@ public class PlayerController : MonoBehaviour
     }
 
 
+    // private void OnCollisionEnter(Collision collision)
+    // {
+    //     // Detect when Neko lands on a platform
+    //     foreach (ContactPoint contact in collision.contacts)
+    //     {
+    //         if (contact.normal.y > 0.5f)
+    //         {
+    //             currentPlatform = collision.transform;
+
+    //             lastPlatformPosition = currentPlatform.position;
+    //             lastPlatformRotation = currentPlatform.rotation;
+
+    //             Debug.Log("[PlayerController] Neko landed on a platform!");
+
+    //             break;
+    //         }
+    //     }
+    // }
+
+    
     private void OnCollisionEnter(Collision collision)
     {
-        // Detect when Neko lands on a platform
         foreach (ContactPoint contact in collision.contacts)
         {
             if (contact.normal.y > 0.5f)
@@ -166,12 +240,17 @@ public class PlayerController : MonoBehaviour
                 lastPlatformPosition = currentPlatform.position;
                 lastPlatformRotation = currentPlatform.rotation;
 
-                Debug.Log("[PlayerController] Neko landed on a platform!");
+                // Save Neko's position when landing on a safe platform.
+                checkpointPosition = transform.position;
+                checkpointRotation = transform.rotation;
+
+                Debug.Log("[PlayerController] Safe position saved!");
 
                 break;
             }
         }
     }
+
 
 
     private void OnCollisionStay(Collision collision)
